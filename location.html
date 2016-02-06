@@ -64,6 +64,10 @@
                         position.coords.latitude,
                         position.coords.longitude)
                 );
+				map.panTo(new google.maps.LatLng(
+                        position.coords.latitude,
+                        position.coords.longitude
+                    ));
             }
 
             function initLocationProcedure() {
