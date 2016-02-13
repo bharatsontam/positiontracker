@@ -1,93 +1,377 @@
 <!doctype html>
 <html lang="en">
 
-    <head>
-        <title>Google maps</title>
-        <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
-        <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&sensor=false&language=en"></script>
-        <script type="text/javascript">
+<head>
+    <title>Google maps</title>
+    <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&sensor=false&language=en"></script>
+    <script type="text/javascript">
 
-            var map,
-                currentPositionMarker,
-                mapCenter = new google.maps.LatLng(40.700683, -73.925972),
-                map;
+        var map,
+            currentPositionMarker,
+            mapCenter = new google.maps.LatLng(40.700683, -73.925972),
+            map;
+        var im = 'http://www.robotwoods.com/dev/misc/bluecircle.png';
+        var browserInfo = {};
+        var Analytics_browser = (function () {
+            if (!browserInfo.browser) {
 
-            function initializeMap()
-            {
-                map = new google.maps.Map(document.getElementById('map_canvas'), {
-                   zoom: 100,
-                   center: mapCenter,
-                   mapTypeId: google.maps.MapTypeId.ROADMAP
-                 });
+                browserInfo.browser = {};
+                browserInfo.browser.mozilla = false;
+                browserInfo.browser.webkit = false;
+                browserInfo.browser.opera = false;
+                browserInfo.browser.safari = false;
+                browserInfo.browser.chrome = false;
+                browserInfo.browser.msie = false;
+                browserInfo.browser.android = false;
+                browserInfo.browser.blackberry = false;
+                browserInfo.browser.ios = false;
+                browserInfo.browser.operaMobile = false;
+                browserInfo.browser.windowsMobile = false;
+                browserInfo.browser.mobile = false;
+
+                var nAgt = navigator.userAgent;
+                browserInfo.browser.ua = nAgt;
+
+                browserInfo.browser.name = navigator.appName;
+                browserInfo.browser.fullVersion = '' + parseFloat(navigator.appVersion);
+                browserInfo.browser.majorVersion = parseInt(navigator.appVersion, 10);
+                var nameOffset, verOffset, ix;
+
+                // In Opera, the true version is after "Opera" or after "Version"
+                if ((verOffset = nAgt.indexOf("Opera")) != -1) {
+                    browserInfo.browser.opera = true;
+                    browserInfo.browser.name = "Opera";
+                    browserInfo.browser.fullVersion = nAgt.substring(verOffset + 6);
+                    if ((verOffset = nAgt.indexOf("Version")) != -1)
+                        browserInfo.browser.fullVersion = nAgt.substring(verOffset + 8);
+                }
+
+                    // In MSIE < 11, the true version is after "MSIE" in userAgent
+                else if ((verOffset = nAgt.indexOf("MSIE")) != -1) {
+                    browserInfo.browser.msie = true;
+                    browserInfo.browser.name = "Microsoft Internet Explorer";
+                    browserInfo.browser.fullVersion = nAgt.substring(verOffset + 5);
+                }
+
+                    // In TRIDENT (IE11) => 11, the true version is after "rv:" in userAgent
+                else if (nAgt.indexOf("Trident") != -1) {
+                    browserInfo.browser.msie = true;
+                    browserInfo.browser.name = "Microsoft Internet Explorer";
+                    var start = nAgt.indexOf("rv:") + 3;
+                    var end = start + 4;
+                    browserInfo.browser.fullVersion = nAgt.substring(start, end);
+                }
+
+                    // In Chrome, the true version is after "Chrome"
+                else if ((verOffset = nAgt.indexOf("Chrome")) != -1) {
+                    browserInfo.browser.webkit = true;
+                    browserInfo.browser.chrome = true;
+                    browserInfo.browser.name = "Chrome";
+                    browserInfo.browser.fullVersion = nAgt.substring(verOffset + 7);
+                }
+                    // In Safari, the true version is after "Safari" or after "Version"
+                else if ((verOffset = nAgt.indexOf("Safari")) != -1) {
+                    browserInfo.browser.webkit = true;
+                    browserInfo.browser.safari = true;
+                    browserInfo.browser.name = "Safari";
+                    browserInfo.browser.fullVersion = nAgt.substring(verOffset + 7);
+                    if ((verOffset = nAgt.indexOf("Version")) != -1)
+                        browserInfo.browser.fullVersion = nAgt.substring(verOffset + 8);
+                }
+                    // In Safari, the true version is after "Safari" or after "Version"
+                else if ((verOffset = nAgt.indexOf("AppleWebkit")) != -1) {
+                    browserInfo.browser.webkit = true;
+                    browserInfo.browser.name = "Safari";
+                    browserInfo.browser.fullVersion = nAgt.substring(verOffset + 7);
+                    if ((verOffset = nAgt.indexOf("Version")) != -1)
+                        browserInfo.browser.fullVersion = nAgt.substring(verOffset + 8);
+                }
+                    // In Firefox, the true version is after "Firefox"
+                else if ((verOffset = nAgt.indexOf("Firefox")) != -1) {
+                    browserInfo.browser.mozilla = true;
+                    browserInfo.browser.name = "Firefox";
+                    browserInfo.browser.fullVersion = nAgt.substring(verOffset + 8);
+                }
+                    // In most other browsers, "name/version" is at the end of userAgent
+                else if ((nameOffset = nAgt.lastIndexOf(' ') + 1) < (verOffset = nAgt.lastIndexOf('/'))) {
+                    browserInfo.browser.name = nAgt.substring(nameOffset, verOffset);
+                    browserInfo.browser.fullVersion = nAgt.substring(verOffset + 1);
+                    if (browserInfo.browser.name.toLowerCase() == browserInfo.browser.name.toUpperCase()) {
+                        browserInfo.browser.name = navigator.appName;
+                    }
+                }
+
+                /*Check all mobile environments*/
+                browserInfo.browser.android = (/Android/i).test(nAgt);
+                browserInfo.browser.blackberry = (/BlackBerry/i).test(nAgt);
+                browserInfo.browser.ios = (/iPhone|iPad|iPod/i).test(nAgt);
+                browserInfo.browser.operaMobile = (/Opera Mini/i).test(nAgt);
+                browserInfo.browser.windowsMobile = (/IEMobile/i).test(nAgt);
+                browserInfo.browser.mobile = browserInfo.browser.android || browserInfo.browser.blackberry || browserInfo.browser.ios || browserInfo.browser.windowsMobile || browserInfo.browser.operaMobile;
+
+
+                // trim the fullVersion string at semicolon/space if present
+                if ((ix = browserInfo.browser.fullVersion.indexOf(";")) != -1)
+                    browserInfo.browser.fullVersion = browserInfo.browser.fullVersion.substring(0, ix);
+                if ((ix = browserInfo.browser.fullVersion.indexOf(" ")) != -1)
+                    browserInfo.browser.fullVersion = browserInfo.browser.fullVersion.substring(0, ix);
+
+                browserInfo.browser.majorVersion = parseInt('' + browserInfo.browser.fullVersion, 10);
+                if (isNaN(browserInfo.browser.majorVersion)) {
+                    browserInfo.browser.fullVersion = '' + parseFloat(navigator.appVersion);
+                    browserInfo.browser.majorVersion = parseInt(navigator.appVersion, 10);
+                }
+                browserInfo.browser.version = browserInfo.browser.majorVersion;
+                return browserInfo.browser;
             }
+            return browserInfo.browser;
+        })();
+        var ajax = function (methodType, url, data, async, success, error) {
 
-            function locError(error) {
-                // the current position could not be located
-                alert("The current position could not be found!");
-            }
+            var createCORSRequest = function (method, url, data, async, success, error) {
 
-            function setCurrentPosition(pos) {
-                currentPositionMarker = new google.maps.Marker({
-                    map: map,
-                    position: new google.maps.LatLng(
-                        pos.coords.latitude,
-                        pos.coords.longitude
-                    ),
-                    title: "Current Position"
-                });
-                map.panTo(new google.maps.LatLng(
-                        pos.coords.latitude,
-                        pos.coords.longitude
-                    ));
-            }
+                var xhr = new XMLHttpRequest();
+                xhr.open(method, url, async);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                if (data)
+                    xhr.send((typeof data === 'object') ? JSON.stringify(data) : data);
+                else
+                    xhr.send();
+                xhr.onload = function (data) { };
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        var result = $.parseJSON(xhr.responseText);
+                        if ($.isFunction(success)) {
+                            success(result);
+                        }
+                    }
+                }
+            };
 
-            function displayAndWatch(position) {
-                // set current position
-                setCurrentPosition(position);
-                // watch position
-                watchCurrentPosition();
-            }
+            var createXDomianRequest = function () {
 
-            function watchCurrentPosition() {
-                var positionTimer = navigator.geolocation.watchPosition(
-                    function (position) {
-                        setMarkerPosition(
-                            currentPositionMarker,
-                            position
-                        );
-                    });
-            }
+                var xdr;
+                if (window.XDomainRequest) {
+                    xdr = new XDomainRequest();
+                    xdr.onerror = err;
+                    xdr.ontimeout = timeo;
+                    xdr.onprogress = progres;
+                    xdr.onload = function () {
 
-            function setMarkerPosition(marker, position) {
-                marker.setPosition(
-                    new google.maps.LatLng(
-                        position.coords.latitude,
-                        position.coords.longitude)
-                );
-				map.panTo(new google.maps.LatLng(
-                        position.coords.latitude,
-                        position.coords.longitude
-                    ));
-            }
+                    };
+                    xdr.timeout = tbTO.value;
+                    xdr.open("get", tbURL.value);
+                    xdr.send();
+                }
+            };
 
-            function initLocationProcedure() {
-                initializeMap();
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
+            var convertObjectToText = function (obj) {
+                if (typeof obj === 'object') {
+                    var text = null;
+                    for (var x in obj) {
+                        text = text === null ? x + "=" + obj[x] : text + "|" + x + "=" + obj[x];
+                    }
+                    return text;
+                }
+                return null;
+            };
+            var xdr = function (url, method, data, callback, errback) {
+                var xmlReq;
+                var xdrReq;
+                if (XMLHttpRequest) {
+                    xmlReq = new XMLHttpRequest();
+
+                    if ('withCredentials' in xmlReq) {
+                        xmlReq.setRequestHeader("Access-Control-Allow-Credentials", true);
+                        xmlReq.open(method, url, true);
+                        xmlReq.setRequestHeader("Content-Type", "application/json");
+                        xmlReq.onerror = errback;
+                        xmlReq.onreadystatechange = function () {
+                            if (xmlReq.readyState === 4) {
+                                if (xmlReq.status >= 200 && xmlReq.status < 400) {
+                                    callback(xmlReq.responseText);
+                                } else {
+                                    errback(new Error('Response returned with non-OK status'));
+                                }
+                            }
+                        };
+                        if (data)
+                            xmlReq.send((typeof data === 'object') ? JSON.stringify(data) : data);
+                        else
+                            xmlReq.send();
+
+                    }
+                    else
+                        if (XDomainRequest) {
+                            xdrReq = new XDomainRequest();
+                            url = url + "?data=" + convertObjectToText(data);
+                            xdrReq.open(method, url);
+                            xdrReq.onerror = errback;
+                            xdrReq.onload = function () {
+                                callback(xdrReq.responseText);
+                            };
+                            xdrReq.send();
+                        }
+                } else if (XDomainRequest) {
+                    xdrReq = new XDomainRequest();
+                    xdrReq.open(method, url);
+                    xdrReq.onerror = errback;
+                    xdrReq.onload = function () {
+                        callback(xdrReq.responseText);
+                    };
+                    xdrReq.send(JSON.stringify(data));
                 } else {
-                    alert("Your browser does not support the Geolocation API");
+                    errback(new Error('CORS not supported'));
+                }
+            };
+
+            var ajaxCall = function (methodType, url, data, async) {
+                if (data) {
+                    return $.ajax({
+                        type: methodType,
+                        url: url,
+                        data: (typeof data === 'object') ? JSON.stringify(data) : data,
+                        async: async,
+                        contentType: 'application/json'
+                    });
+                }
+                else {
+                    return $.ajax({
+                        type: methodType,
+                        url: url,
+                        async: async,
+                        contentType: 'application/json'
+                    });
+                }
+                return Error("Error has occured");
+            };
+            if (Analytics_browser.name === "Microsoft Internet Explorer" && (Analytics_browser.version === 8 || Analytics_browser.version === 9)) {
+                xdr(url, methodType, data, success, error);
+            }
+            else if (Analytics_browser.name === "Microsoft Internet Explorer" && Analytics_browser.version === 10) {
+                try {
+                    ajaxCall(methodType, url, data, async)
+                        .done(function (result) {
+                            if (typeof success === 'function') {
+                                success(result);
+                            }
+                        })
+                        .error(function (jqXHR, textStatus, errorThrown) {
+                            if (typeof error === 'function') {
+                                error(jqXHR, textStatus, errorThrown);
+                            }
+                        });
+                }
+                catch (e) {
+                    try {
+                        xdr(url, methodType, data, success, error);
+                    }
+                    catch (e) {
+                    }
                 }
             }
-
-            $(document).ready(function() {
-                initLocationProcedure();
+            else {
+                ajaxCall(methodType, url, data, async)
+                    .done(function (result) {
+                        if (typeof success === 'function') {
+                            success(result);
+                        }
+                    })
+                    .error(function (jqXHR, textStatus, errorThrown) {
+                        if (typeof error === 'function') {
+                            error(jqXHR, textStatus, errorThrown);
+                        }
+                    });
+            }
+        };
+        function initializeMap() {
+            map = new google.maps.Map(document.getElementById('map_canvas'), {
+                zoom: 16,
+                center: mapCenter,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
             });
+        }
 
-        </script>
-    </head>
+        function locError(error) {
+            // the current position could not be located
+            alert("The current position could not be found!");
+        }
 
-    <body>
-        <div id="map_canvas" style="height:600px;"></div>
-    </body>
+        function setCurrentPosition(pos) {
+            currentPositionMarker = new google.maps.Marker({
+                map: map,
+                position: new google.maps.LatLng(
+                    pos.coords.latitude,
+                    pos.coords.longitude
+                ),
+                title: "Current Position",
+                icon: im
+            });
+            map.panTo(new google.maps.LatLng(
+                    pos.coords.latitude,
+                    pos.coords.longitude
+                ));
+        }
+
+        function displayAndWatch(position) {
+            // set current position
+            setCurrentPosition(position);
+            // watch position
+            //watchCurrentPosition();
+        }
+
+        function watchCurrentPosition() {
+            var positionTimer = navigator.geolocation.watchPosition(
+                function (position) {
+                    setMarkerPosition(
+                        currentPositionMarker,
+                        position
+                    );
+                });
+        }
+        setInterval(function () {
+            
+            ajax("GET", "http://webapigpstracker.azurewebsites.net/api/v1/device/getlocation", null, false, function (data) {
+                
+                currentPositionMarker.setPosition(
+                new google.maps.LatLng(
+                    data.Latitude,
+                    data.Longitude)
+            );
+
+            }, function (error) {
+                
+
+            });
+        }, 1000);
+
+        function setMarkerPosition(marker, position) {
+            marker.setPosition(
+                new google.maps.LatLng(
+                    position.coords.latitude,
+                    position.coords.longitude)
+            );
+        }
+
+        function initLocationProcedure() {
+            initializeMap();
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
+            } else {
+                alert("Your browser does not support the Geolocation API");
+            }
+        }
+
+        $(document).ready(function () {
+            initLocationProcedure();
+        });
+
+    </script>
+</head>
+
+<body>
+    <div id="map_canvas" style="height:600px;"></div>
+</body>
 
 </html>
