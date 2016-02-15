@@ -299,26 +299,29 @@
         }
 
         function setCurrentPosition(pos) {
-            
-				
-			ajax("GET", "http://webapigpstracker.azurewebsites.net/api/v1/device/getlocation", null, false, function (data) {
-                
+
+
+            ajax("GET", "http://webapigpstracker.azurewebsites.net/api/v1/device/getlocation", null, false, function (data) {
+                debugger;
                 currentPositionMarker = new google.maps.Marker({
-                map: map,
-                position: new google.maps.LatLng(
-                    data.Latitude,
-                    data.Longitude
-                ),
-                title: "Current Position",
-                icon: im
-            });
-            map.panTo(new google.maps.LatLng(
-                    data.Latitude,
-                    data.Longitude
-                ));
+                    map: map,
+                    position: new google.maps.LatLng(
+                        data.Latitude,
+                        data.Longitude
+                    ),
+                    title: "Current Position",
+                    icon: im
+                });
+                map.panTo(new google.maps.LatLng(
+                        data.Latitude,
+                        data.Longitude
+                    ));
+
+                $("#speedLabel")[0].textContent = data.Speed;
+                $("#accuracyLabel")[0].textContent = data.Accuracy;
 
             }, function (error) {
-                
+
 
             });
         }
@@ -340,9 +343,9 @@
                 });
         }
         setInterval(function () {
-            
+
             ajax("GET", "http://webapigpstracker.azurewebsites.net/api/v1/device/getlocation", null, false, function (data) {
-                
+
                 currentPositionMarker.setPosition(
                 new google.maps.LatLng(
                     data.Latitude,
@@ -353,8 +356,11 @@
                     data.Longitude
                 ));
 
+                $("#speedLabel")[0].textContent = data.Speed;
+                $("#accuracyLabel")[0].textContent = data.Accuracy;
+
             }, function (error) {
-                
+
 
             });
         }, 1000);
@@ -369,11 +375,11 @@
 
         function initLocationProcedure() {
             initializeMap();
-			displayAndWatch();
+            displayAndWatch();
             //if (navigator.geolocation) {
-              //  navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
+            //  navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
             //} else {
-              //  alert("Your browser does not support the Geolocation API");
+            //  alert("Your browser does not support the Geolocation API");
             //}
         }
 
@@ -385,6 +391,11 @@
 </head>
 
 <body>
+    Speed : <label id="speedLabel"></label>
+    <br />
+    Accuracy : <label id="accuracyLabel"></label>
+    <br />
+    <br />
     <div id="map_canvas" style="height:600px;"></div>
 </body>
 
