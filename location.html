@@ -299,19 +299,28 @@
         }
 
         function setCurrentPosition(pos) {
-            currentPositionMarker = new google.maps.Marker({
+            
+				
+			ajax("GET", "http://webapigpstracker.azurewebsites.net/api/v1/device/getlocation", null, false, function (data) {
+                
+                currentPositionMarker = new google.maps.Marker({
                 map: map,
                 position: new google.maps.LatLng(
-                    pos.coords.latitude,
-                    pos.coords.longitude
+                    data.Latitude,
+                    data.Longitude
                 ),
                 title: "Current Position",
                 icon: im
             });
             map.panTo(new google.maps.LatLng(
-                    pos.coords.latitude,
-                    pos.coords.longitude
+                    data.Latitude,
+                    data.Longitude
                 ));
+
+            }, function (error) {
+                
+
+            });
         }
 
         function displayAndWatch(position) {
