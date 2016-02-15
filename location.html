@@ -369,11 +369,12 @@
 
         function initLocationProcedure() {
             initializeMap();
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
-            } else {
-                alert("Your browser does not support the Geolocation API");
-            }
+			displayAndWatch();
+            //if (navigator.geolocation) {
+              //  navigator.geolocation.getCurrentPosition(displayAndWatch, locError);
+            //} else {
+              //  alert("Your browser does not support the Geolocation API");
+            //}
         }
 
         $(document).ready(function () {
